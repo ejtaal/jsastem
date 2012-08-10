@@ -1,0 +1,12 @@
+Arabic Pangrams:
+
+    صِف خَلقَ خَودِ كَمِثلِ الشَمسِ إِذ بَزَغَت — يَحظى الضَجيعُ بِها نَجلاءَ مِعطارِ (A poem by Al Farāhīdi)
+    نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق
+    nṣ ḥkym lh sr qāṭʿ uḏu šān ʿẓym mktub ʿala ṯub aẖḍr umġlf bǧld azrq
+        A wise text which has an absolute secret and great importance, written on a green cloth and covered with blue leather (it has a riddle built into it)
+    ابجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ
+
+Some other difficult words:
+ يعد منعت إضربن كتابهما حفظة
+ بالإستنصارهما مفاتيح مدرسة
+etc. etc. etc.
