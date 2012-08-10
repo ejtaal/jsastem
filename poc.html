@@ -1,0 +1,289 @@
+<html><head><title>JSASTEM - JavaScript Arabic Stemmer - POC</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<style>
+body { width: 100%; background-color: #DDD; }
+body, div { margin: 0; padding: 0; }
+/*
+a { color: black; text-decoration: none; }
+*/
+.button { 
+	width: 100%; background-color: silver;
+	font-size: xx-large; text-align: center; 
+	padding-top: 10px; padding-bottom: 10px; 
+	}
+hr { margin: 5px; }
+.c_word {
+	border: 1px silver solid;
+}
+</style>
+<meta name='viewport' content='width=device-width'/>  
+</head>
+<body>
+<!--
+http://www.openjs.com/scripts/events/keyboard_shortcuts/
+-->
+<script type="text/javascript" src="jslib/jquery.js"></script>
+<script type="text/javascript" src="jslib/jquery.ba-hashchange.min.js"></script>
+<script type="text/javascript" src="jslib/shortcut.js"></script>
+<!--
+<script type="text/javascript" src="aa-ll-data.js"></script>
+<script type="text/javascript" src="aa-ls-data.js"></script>
+-->
+<textarea rows=10 cols=100 id=debug style='height: auto; float: bottom; bottom: 0; position: fixed; background-color: #ffd; z-index: 999;'>
+</textarea>
+
+<div id=text style=' display: none;'>
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+This is some text. Please note it's lots of text. Try clicking on a word.
+</div>
+
+<hr>
+
+<div id=header style=" font-size: larger; float: right; ">
+The Word
+</div>
+<div id='main'>
+</div>
+
+<hr>
+
+<div id='template' style='display: none;'>
+<span class=close_layer style='float: right; border: 2px solid black; padding: 20px; '>X</span>
+<span class=choice style='font-size: larger;'>choice here</span>
+<span class=text>text here</p>
+
+</div>
+
+
+<script>
+
+var current_layer = 0;
+var layer_colors =   [ 'pink', "blue", "yellow", "green", "red", "purple"];
+var layer_bgcolors = [ 'black', "#ddf", "#ffd",   "#dfd" , "#fdd", "#fdf"];
+/*
+	layers[0][0] = '0_32'; // <- this the $layer_$wordcount of the word that has been clicked in the particular layer
+	layers[0][1] = 'blah'; // <- This is the actual word that's being displayed in the layer on top, as it may be (slightly) different
+	layers[1][0] = '1_32';
+	layers[1][1] = 'nice';
+	This then becomes the following hash in the window bar for bookmarking, sharing and navigation use.
+	http://the.url/page.html#0_32,blah,1_32,nice
+*/
+var layers = new Array();
+
+// main()
+// Load initial test data:
+$("#main").text( $("#text").text() );
+
+spanify_text( '#main', current_layer);
+parse_hash();
+//window.location.hash = "#";
+
+// Bind the event.
+$(window).hashchange( function(){
+	// Alerts every time the hash changes!
+	//alert( location.hash );
+	parse_hash();
+})
+
+// ========= End of main() =========
+// Only subroutines below. Beware!
+
+function set_layer( word, zindex) {
+	layers[zindex] = []; //empty or create
+	layers[zindex][0] = $(word).attr('id');
+	layers[zindex][1] = $(word).text();
+	for (i = layers.length; i > zindex; i--) {
+		layers.splice( i, 1);
+		$("#" + "layer_" + i).remove();
+		debug("#" + "layer_" + i);
+	}
+	build_hash();
+}
+
+function build_hash() {
+	var str = "";
+	for (i = 0; i < layers.length; i++) { 
+		if (i in layers)
+			str +=  layers[i][0] + '=' + layers[i][1] + ',';
+	}
+	// slice of last ','
+	str = str.slice(0,-1);
+	console.log(str);
+	debug(str);
+	// This triggers parse_hash() automatically
+	window.location.hash = "#" + str;
+}
+
+function parse_hash() {
+	var hashstring = window.location.hash.replace(/^#/,'');
+	var i, variables = hashstring.split(','); 
+	if (variables.length > 0 && variables[0].indexOf('=') > 2) { 
+	// Variables present in hash, they represent the visible layers
+		for (i = 0; i < variables.length; i++) { 
+			keyValuePair = variables[i].split('='); 
+			//alert( "Var found: " + keyValuePair[0] + ' = ' + keyValuePair[1] );
+			var clicked_word = keyValuePair[0];
+			var word_on_top = keyValuePair[1];
+			if ( clicked_word !== undefined && word_on_top !== undefined) {
+			debug( "Var found: " + keyValuePair[0] + ' = ' + keyValuePair[1] );
+			//debug( 'create_layer(' + (i + 1) + clicked_word +', '+  word_on_top );
+			layers[i] = [];
+			layers[i][0] = clicked_word;
+			layers[i][1] = word_on_top;
+			create_layer( i + 1, clicked_word, word_on_top);
+			} else {
+				debug( "Malformed content in hash found: " + variables[i]);
+			}
+		}
+	} 
+	else { 
+		debug ('No variables in the hash found');
+	} 
+	debug(layers);
+}
+
+function create_layer( zindex, clicked_word, word_on_top ) {
+	//debug( zindex + ' ' + clicked_word + ' ' + word_on_top + ' ' + layer_colors[zindex]);
+	$('#' + clicked_word).siblings().css('background-color', 'inherit');
+	$('#' + clicked_word).siblings().css('border', 'none');
+	$('#' + clicked_word).css('background-color', layer_bgcolors[zindex]);
+	$('#' + clicked_word).css('border', '1px solid ' + layer_colors[zindex]);
+  //debug( $('#'+clicked_word).text() );
+	var new_layer = "layer_" + zindex;
+	$('body').append("<div id=" + new_layer + "></div>");
+	$("#" + new_layer).html($("#template").html());
+	$("#" + new_layer + " span.text" ).text( $("#text").text());
+	$("#" + new_layer + " span.choice" ).text( word_on_top);
+	$("#" + new_layer + " span.choice" ).css( 'border', '3px solid ' + layer_colors[zindex]);
+	spanify_text( "#" + new_layer + " span.text", zindex);
+	$("#" + new_layer + " span.close_layer" ).click(function() {
+	  	//alert("Handler for .click() called.");
+			$('#' + clicked_word).css('background-color', 'inherit');
+			$('#' + clicked_word).css('border', 'none');
+			//console.log( layers);
+			//console.log( layers);
+debug(layers);
+			for (i = layers.length; i >= zindex - 1; i--) {
+				layers.splice( i, 1);
+				$("#" + "layer_" + i).remove();
+				debug("#" + "layer_" + i);
+			}
+debug(layers);
+			build_hash();
+			//console.log( layers);
+		});
+ 	//onClick="javascript:close_layer(this,1)"
+	var cssObj = {
+			'position' : 'absolute',
+      'background-color' : layer_bgcolors[zindex],
+			'border' : '1px solid ' + layer_colors[zindex],
+			'border-top' : '3px solid ' + layer_colors[zindex],
+			'z-index' : zindex,
+			'width' : '99%',
+			'top' : $('#' + clicked_word).offset().top + $('#' + clicked_word).height() * 3
+    }
+	$("#" + new_layer).css(cssObj);
+
+	/*
+      'color' : 'rgb(0,40,244)',
+	*/
+}
+
+function spanify_text( id, source_layer) {
+	//debug( 'id: ' + id + ' sl: ' + source_layer);
+	var word_count = 0;
+	target = source_layer + 1;
+	$(id).html(
+		$(id).text().replace( /(\w+)/g, function( word) {	
+			return '<span class=span_' + source_layer + ' id="' + source_layer + '_' + ++word_count + '" '
+				+ 'onClick="javascript:set_layer(this,'+source_layer+')">' + word + '</span>';
+				//+ 'onClick="javascript:set_layer(this,'+target+')">' + word + '</span>';
+		})
+	);
+	/*
+	$(id + ' span').click(function() {
+	  	//alert("Handler for .click() called.");
+			//debug(target);
+			setup_layer( this, target);
+
+			//$("#" + new_layer).remove();
+		});
+	$(id + ' span').css( 'border', '1px solid silver');
+	var text = $(id).text();
+		var pattern = /(\w+)/g;
+		var match;
+		while (match = pattern.exec(text)) {
+			match = 'T';
+		}
+		//$(id).text().replace(/(\w+)/g, '<span class=span_' + source_layer + ' onClick="javascript:setup_layer(this,'+target+')">$1</span>' ) 
+		//$(id).text().replace(/(\w+)/g, '<span class=span_' + source_layer + ' onClick="javascript:setup_layer(this,'+target+')">$1</span>' ) 
+	$(id).html( text);
+	//$(id + ' span').prepend(source_layer+':');
+
+	//alert("test");
+	var words = $("#text").text().split(/[\s,]+/);
+	//$("p").empty(); 
+	$.each(words, function(i, v) { 
+	    $("#main").append(
+				"<span class=c_word onClick=javascript:do_something(this)>" + v + "</span> "
+			);
+	});
+	*/
+}
+
+
+function debug( obj) {
+	$('#debug').prepend( dump(obj) + "<br>");
+	//console.log( str);
+}
+
+/**
+ * Function : dump()
+ * Arguments: The data - array,hash(associative array),object
+ *    The level - OPTIONAL
+ * Returns  : The textual representation of the array.
+ * This function was inspired by the print_r function of PHP.
+ * This will accept some data as the argument and return a
+ * text that will be a more readable version of the
+ * array/hash/object that is given.
+ * Docs: http://www.openjs.com/scripts/others/dump_function_php_print_r.php
+ */
+function dump(arr,level) {
+	var dumped_text = "";
+	if(!level) level = 0;
+	
+	//The padding given at the beginning of the line.
+	var level_padding = "";
+	for(var j=0;j<level+1;j++) level_padding += "    ";
+	
+	if(typeof(arr) == 'object') { //Array/Hashes/Objects 
+		for(var item in arr) {
+			var value = arr[item];
+			
+			if(typeof(value) == 'object') { //If it is an array,
+				dumped_text += level_padding + "'" + item + "' ...\n";
+				dumped_text += dump(value,level+1);
+			} else {
+				dumped_text += level_padding + "'" + item + "' => \"" + value + "\"\n";
+			}
+		}
+	} else { //Strings/Chars/Numbers etc.
+		dumped_text = "("+typeof(arr)+")("+arr.length+") => "+arr+" <=\n";
+	}
+	return dumped_text;
+}
+
+</script>
+
+</body>
+</html>
