@@ -1,0 +1,4 @@
+jsastem
+=======
+
+JavaScript Arabic Stemmer
