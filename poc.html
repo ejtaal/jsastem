@@ -25,11 +25,34 @@ http://www.openjs.com/scripts/events/keyboard_shortcuts/
 <script type="text/javascript" src="jslib/jquery.js"></script>
 <script type="text/javascript" src="jslib/jquery.ba-hashchange.min.js"></script>
 <script type="text/javascript" src="jslib/shortcut.js"></script>
+<script type="text/javascript" src="jslib/xregexp-all-min.js"></script>
+
 <!--
 <script type="text/javascript" src="aa-ll-data.js"></script>
 <script type="text/javascript" src="aa-ls-data.js"></script>
 -->
-<textarea rows=10 cols=100 id=debug style='height: auto; float: bottom; bottom: 0; position: fixed; background-color: #ffd; z-index: 999;'>
+<textarea rows=10 cols=100 id=input style='height: auto; background-color: #ffd;'>
+abcdefghijklmnopqrstuvwxyz
+01234567890
+
+Arabic Pangrams:
+
+    صِف خَلقَ خَودِ كَمِثلِ الشَمسِ إِذ بَزَغَت — يَحظى الضَجيعُ بِها نَجلاءَ مِعطارِ (A poem by Al Farāhīdi)
+    نص حكيم له سر قاطع وذو شأن عظيم مكتوب على ثوب أخضر ومغلف بجلد أزرق
+    nṣ ḥkym lh sr qāṭʿ uḏu šān ʿẓym mktub ʿala ṯub aẖḍr umġlf bǧld azrq
+        A wise text which has an absolute secret and great importance, written on a green cloth and covered with blue leather (it has a riddle built into it)
+    ابجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ
+
+Some other difficult words:
+ يعد منعت إضربن كتابهما حفظة
+ بالإستنصارهما مفاتيح مدرسة
+etc. etc. etc.
+</textarea>
+
+BLAH
+<input type=button onClick='javascript:do_stemming()' value="  Go  ">
+
+<textarea rows=10 cols=100 id=debug>
 </textarea>
 
 <div id=text style=' display: none;'>
@@ -80,123 +103,51 @@ var layer_bgcolors = [ 'black', "#ddf", "#ffd",   "#dfd" , "#fdd", "#fdf"];
 */
 var layers = new Array();
 
+var JSaStemRegexps = 
+	{	"step 1": {"info" : "This removes suffixes", "regexes": [ 
+			["(aa|bb|cc|dd|ee|90)$", "" ],
+			["xyz$", ""]
+		]}
+	};
+
 // main()
 // Load initial test data:
-$("#main").text( $("#text").text() );
 
-spanify_text( '#main', current_layer);
-parse_hash();
-//window.location.hash = "#";
+do_stemming();
 
-// Bind the event.
-$(window).hashchange( function(){
-	// Alerts every time the hash changes!
-	//alert( location.hash );
-	parse_hash();
-})
-
-// ========= End of main() =========
-// Only subroutines below. Beware!
-
-function set_layer( word, zindex) {
-	layers[zindex] = []; //empty or create
-	layers[zindex][0] = $(word).attr('id');
-	layers[zindex][1] = $(word).text();
-	for (i = layers.length; i > zindex; i--) {
-		layers.splice( i, 1);
-		$("#" + "layer_" + i).remove();
-		debug("#" + "layer_" + i);
-	}
-	build_hash();
+function do_stemming() {
+	debug(JSaStemRegexps["step 1"].regexes);
+	debug(JSaStemRegexps);	
+	//console.log(JSaStemRegexps);
+	// Great, \w doesn't match arabic unicode letters! >:(
+		// But there is XRegExp
+		//XRegExp.matchRecursive( $("#input").text(), 
+		//XRegExp('[\\p{Latin}\\p{Common}]');
+		//XRegExp.install('natives');
+		//$("#input").text().replace( /(\\p{Arabic}+)/g, function( word) {	
+		//$("#input").text().replace( '/(\p{L}+)/g', function( word) {	
+			//stem( word);
+		//})
+		//XRegExp.forEach( $("#input").text(), /\p{L}+/, function(match, i) {
+		XRegExp.forEach( $("#input").text(), XRegExp('[\\p{Arabic}\\p{M}]+'), function(match, i) {
+			//if (i % 2) this.push(+match[0]);
+			//debug(match);
+			stem(match[0]);
+		}, []);
 }
 
-function build_hash() {
-	var str = "";
-	for (i = 0; i < layers.length; i++) { 
-		if (i in layers)
-			str +=  layers[i][0] + '=' + layers[i][1] + ',';
-	}
-	// slice of last ','
-	str = str.slice(0,-1);
-	console.log(str);
-	debug(str);
-	// This triggers parse_hash() automatically
-	window.location.hash = "#" + str;
-}
+									
+	/*								
+var myJSONObject = {"bindings": [
+        {"ircEvent": "PRIVMSG", "method": "newURI", "regex": "^http://.*"},
+        {"ircEvent": "PRIVMSG", "method": "deleteURI", "regex": "^delete.*"},
+        {"ircEvent": "PRIVMSG", "method": "randomURI", "regex": "^random.*"}
+    ]
+};
+*/
 
-function parse_hash() {
-	var hashstring = window.location.hash.replace(/^#/,'');
-	var i, variables = hashstring.split(','); 
-	if (variables.length > 0 && variables[0].indexOf('=') > 2) { 
-	// Variables present in hash, they represent the visible layers
-		for (i = 0; i < variables.length; i++) { 
-			keyValuePair = variables[i].split('='); 
-			//alert( "Var found: " + keyValuePair[0] + ' = ' + keyValuePair[1] );
-			var clicked_word = keyValuePair[0];
-			var word_on_top = keyValuePair[1];
-			if ( clicked_word !== undefined && word_on_top !== undefined) {
-			debug( "Var found: " + keyValuePair[0] + ' = ' + keyValuePair[1] );
-			//debug( 'create_layer(' + (i + 1) + clicked_word +', '+  word_on_top );
-			layers[i] = [];
-			layers[i][0] = clicked_word;
-			layers[i][1] = word_on_top;
-			create_layer( i + 1, clicked_word, word_on_top);
-			} else {
-				debug( "Malformed content in hash found: " + variables[i]);
-			}
-		}
-	} 
-	else { 
-		debug ('No variables in the hash found');
-	} 
-	debug(layers);
-}
-
-function create_layer( zindex, clicked_word, word_on_top ) {
-	//debug( zindex + ' ' + clicked_word + ' ' + word_on_top + ' ' + layer_colors[zindex]);
-	$('#' + clicked_word).siblings().css('background-color', 'inherit');
-	$('#' + clicked_word).siblings().css('border', 'none');
-	$('#' + clicked_word).css('background-color', layer_bgcolors[zindex]);
-	$('#' + clicked_word).css('border', '1px solid ' + layer_colors[zindex]);
-  //debug( $('#'+clicked_word).text() );
-	var new_layer = "layer_" + zindex;
-	$('body').append("<div id=" + new_layer + "></div>");
-	$("#" + new_layer).html($("#template").html());
-	$("#" + new_layer + " span.text" ).text( $("#text").text());
-	$("#" + new_layer + " span.choice" ).text( word_on_top);
-	$("#" + new_layer + " span.choice" ).css( 'border', '3px solid ' + layer_colors[zindex]);
-	spanify_text( "#" + new_layer + " span.text", zindex);
-	$("#" + new_layer + " span.close_layer" ).click(function() {
-	  	//alert("Handler for .click() called.");
-			$('#' + clicked_word).css('background-color', 'inherit');
-			$('#' + clicked_word).css('border', 'none');
-			//console.log( layers);
-			//console.log( layers);
-debug(layers);
-			for (i = layers.length; i >= zindex - 1; i--) {
-				layers.splice( i, 1);
-				$("#" + "layer_" + i).remove();
-				debug("#" + "layer_" + i);
-			}
-debug(layers);
-			build_hash();
-			//console.log( layers);
-		});
- 	//onClick="javascript:close_layer(this,1)"
-	var cssObj = {
-			'position' : 'absolute',
-      'background-color' : layer_bgcolors[zindex],
-			'border' : '1px solid ' + layer_colors[zindex],
-			'border-top' : '3px solid ' + layer_colors[zindex],
-			'z-index' : zindex,
-			'width' : '99%',
-			'top' : $('#' + clicked_word).offset().top + $('#' + clicked_word).height() * 3
-    }
-	$("#" + new_layer).css(cssObj);
-
-	/*
-      'color' : 'rgb(0,40,244)',
-	*/
+function stem( word) {
+	debug(word);
 }
 
 function spanify_text( id, source_layer) {
@@ -243,7 +194,7 @@ function spanify_text( id, source_layer) {
 
 
 function debug( obj) {
-	$('#debug').prepend( dump(obj) + "<br>");
+	$('#debug').append( dump(obj) + "<br>");
 	//console.log( str);
 }
 
