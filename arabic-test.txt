@@ -6,7 +6,8 @@ Arabic Pangrams:
         A wise text which has an absolute secret and great importance, written on a green cloth and covered with blue leather (it has a riddle built into it)
     ابجد هوز حطي كلمن سعفص قرشت ثخذ ضظغ
 
-Some other difficult words:
+Some other difficult words for the stemmer to chew on:
  يعد منعت إضربن كتابهما حفظة
  بالإستنصارهما مفاتيح مدرسة
+ نصكما قنا تنبت
 etc. etc. etc.

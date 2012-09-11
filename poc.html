@@ -26,6 +26,7 @@ http://www.openjs.com/scripts/events/keyboard_shortcuts/
 <script type="text/javascript" src="jslib/jquery.ba-hashchange.min.js"></script>
 <script type="text/javascript" src="jslib/shortcut.js"></script>
 <script type="text/javascript" src="jslib/xregexp-all-min.js"></script>
+<script type="text/javascript" src="jsastem.js"></script>
 
 <!--
 <script type="text/javascript" src="aa-ll-data.js"></script>
@@ -46,13 +47,15 @@ Arabic Pangrams:
 Some other difficult words:
  يعد منعت إضربن كتابهما حفظة
  بالإستنصارهما مفاتيح مدرسة
+ فليصمه
+ ثقفتموهم
 etc. etc. etc.
 </textarea>
 
 BLAH
 <input type=button onClick='javascript:do_stemming()' value="  Go  ">
 
-<textarea rows=10 cols=100 id=debug>
+<textarea rows=10 cols=50 id=debug style=' font-size: 200%;' >
 </textarea>
 
 <div id=text style=' display: none;'>
@@ -79,14 +82,6 @@ The Word
 </div>
 
 <hr>
-
-<div id='template' style='display: none;'>
-<span class=close_layer style='float: right; border: 2px solid black; padding: 20px; '>X</span>
-<span class=choice style='font-size: larger;'>choice here</span>
-<span class=text>text here</p>
-
-</div>
-
 
 <script>
 
@@ -116,8 +111,8 @@ var JSaStemRegexps =
 do_stemming();
 
 function do_stemming() {
-	debug(JSaStemRegexps["step 1"].regexes);
-	debug(JSaStemRegexps);	
+	//debug(JSaStemRegexps["step 1"].regexes);
+	//debug(JSaStemRegexps);	
 	//console.log(JSaStemRegexps);
 	// Great, \w doesn't match arabic unicode letters! >:(
 		// But there is XRegExp
@@ -146,9 +141,36 @@ var myJSONObject = {"bindings": [
 };
 */
 
-function stem( word) {
-	debug(word);
+// =============== end of jsastem.js ====================
+
+function stem( input) {
+	var showdebug = 1;
+	var stem = input;
+	var candidate_roots = [];
+	// Stemming step 1. Strip diacritics
+	var stem = XRegExp.replace( stem, XRegExp('\\p{M}', 'g'), '');
+	debug( 'step 1. : ' + input + ' -> ' + stem);
+	// Stemming step 2. remove length three and length two prefixes/suffixes in this order
+	if (stem.length > 6) { stem = stem.replace( /^(كال|بال|ولل|وال)(.*)$/i, $2); }
+	if (stem.length > 5) { stem = stem.replace( /^(ال|لل)(.*)$/i, $2); }
+	// Stemming step 3. remove length three and length two suffixes in this order
+	if (stem.length > 6) { stem = stem.replace( /^(.*)(تما|هما|تان|تين|كما)$/i, $1); }
+	if (stem.length > 5) { stem = stem.replace( /^(.*)(ون|ات|ان|ين|تن|كم|هن|نا|يا|ها|تم|كن|ني|وا|ما|هم)$/i, $1); }
+
+	
+        self.p1 = [u'ل', u'ب', u'ف', u'س', u'و',
+                   u'ي', u'ت', u'ن', u'ا']   # length one prefixes
+
+
+
+
+	/*
+		Filter candidate_roots through possible roots
+	*/
+	return stem
 }
+
+// =============== end of jsastem.js ====================
 
 function spanify_text( id, source_layer) {
 	//debug( 'id: ' + id + ' sl: ' + source_layer);
@@ -235,6 +257,16 @@ function dump(arr,level) {
 }
 
 </script>
+<!-- YAMLI CODE START -->
+<script type="text/javascript" src="http://api.yamli.com/js/yamli_api.js"></script>
+<script type="text/javascript">
+  if (typeof(Yamli) == "object" && Yamli.init( { uiLanguage: "en" , startMode: "onOrUserDefault" } ))
+  {
+		// id of your text box to yamlify
+    Yamli.yamlify( "test1", { settingsPlacement: "bottomLeft" } );
+  }
+</script>
+<!-- YAMLI CODE END -->
 
 </body>
 </html>
