@@ -74,6 +74,7 @@ function jsastem( input) {
 			//return stem;
 		}
 	}
+	if ( showdebug == 1) debug( 'after length 6 : ' + stem);
 
 	if (stem.length == 5) { 
 		stem = stem.replace( /^ا(.)[اتط](.)(.)$/i, "$1$2$3");  //   افتعل   -  افاعل
@@ -103,6 +104,7 @@ function jsastem( input) {
 			//return stem;
 		}
 	}
+	if ( showdebug == 1) debug( 'after length 5 : ' + stem);
 
 	if (stem.length == 4) { 
 		stem = stem.replace( /^م(.)(.)(.)$/i, "$1$2$3");     // مفعل
@@ -117,11 +119,18 @@ function jsastem( input) {
 			return stem;
 		}
 	}
-
-
-	/*
-		Filter candidate_roots through known possible roots
-	*/
+	if ( showdebug == 1) debug( 'after length 4 : ' + stem);
+/*
+	TODO
+	var matches = new array();
+	var possible_roots = new array();
+	if ( matches = stem.match( /(.)ئ(.)/)) {
+		possible_roots[] = $matches[0] + 'و' + $matches[1];
+		possible_roots[] = $matches[0] + 'ي' + $matches[1];
+	}
+	
+	// Filter candidate_roots through known possible roots
+*/
 	return stem
 }
 
