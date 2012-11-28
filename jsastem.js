@@ -1,5 +1,20 @@
 
 /*
+	Project: JavaScript Arabic Stemmer
+	Name: jsastem.js
+	Desc: This is a javascript port of the IRSI stemmer as part of the
+		NLTK toolkit which is written in python.
+	URL: https://github.com/ejtaal/jsastem
+	License: GPL
+	Copyright: Erik Taal <ejtaal@gmail.com> ((http://ejtaal.net)
+
+	How to use: Simply include jsastem.js and call the jsastem() function
+		with a single string as an argument. A string containing the root
+		should be returned. Please note that in future versions this may become
+		an array of possible roots...
+*/
+
+/*
 Load data:
 
 suffixes
@@ -8,18 +23,6 @@ regexes
 known_roots
 ?
 
-*/
-/*
-function stem(word) {
-	stem = word;
-	if ( word.length < 3) return stem;
-
-	// Only words longer than 2 letters past here
-
-	// Check suffixes and prefixes, starting with the longest
-
-	return stem;
-}
 */
 
 function jsastem( input) {
@@ -66,7 +69,7 @@ function jsastem( input) {
 			stem = stem.replace( /^ا(...)ا(.)$/i, "$1$2");  // افعلال
 			stem = stem.replace( /^مت(.۔..)$/i, "$1");      // متفعلل
 
-			stem = stem.replace( /^[لبفسويتنام]/i, "");     // single letter prefixes، added م for مفعلل
+			stem = stem.replace( /^[لبفسويتنامك]/i, "");     // single letter prefixes، added م for مفعلل
 			if (stem.length == 6 ) { 
 				stem = stem.replace( /^(..)ا(.)ي(.)$/i, "$1$2$3"); // فعاليل
 				
@@ -100,7 +103,7 @@ function jsastem( input) {
 			//if (stem.length == 4 ) { TODO: initiate 4 letter word routine? }
 			stem = stem.replace( /^(..)ا(..)$/i, "$1$2");     //    فعالل
 			stem = stem.replace( /^(...)ا(.)$/i, "$1$2");     //    فعلال
-			stem = stem.replace( /^[لبفسويتنام]/i, "");     // single letter prefixes، added م for مفعلل
+			stem = stem.replace( /^[لبفسويتنامك]/i, "");     // single letter prefixes، added م for مفعلل
 			//return stem;
 		}
 	}
@@ -115,8 +118,8 @@ function jsastem( input) {
 		else {
 			stem = stem.replace( /^(.)(.)(.)[ةهيكتان]$/i, "$1$2$3");     // single letter suffixes
 			if (stem.length == 3 ) { return stem; }
-			stem = stem.replace( /^[لبفسويتنا](.)(.)(.)$/i, "$1$2$3");     // single letter prefixes
-			return stem;
+			stem = stem.replace( /^[لبفسويتناك](.)(.)(.)$/i, "$1$2$3");     // single letter prefixes
+			//return stem;
 		}
 	}
 	if ( showdebug == 1) debug( 'after length 4 : ' + stem);

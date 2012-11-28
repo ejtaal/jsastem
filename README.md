@@ -33,4 +33,9 @@ could be enumerated in the return value. Prior to returning them
 they could be compared against some known lists of existing roots
 to filter out unknown roots.
 
+License, Copyright & Contact
+============================
+	
+License: GPL
+Copyright: Erik Taal <ejtaal@gmail.com> ((http://ejtaal.net)
 
